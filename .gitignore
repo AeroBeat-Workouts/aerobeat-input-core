@@ -4,6 +4,11 @@
 export.cfg
 export_presets.cfg
 
+# GodotEnv package/foundation workbench
+.testbed/addons/*
+!.testbed/addons/.editorconfig
+.testbed/.addons/
+
 # IDE
 .vscode/
 .idea/

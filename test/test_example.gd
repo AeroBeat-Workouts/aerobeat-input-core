@@ -1,4 +1,4 @@
-extends GutTest
+extends "res://addons/gut/test.gd"
 
 # ------------------------------------------------------------------------------
 # Example Unit Test
