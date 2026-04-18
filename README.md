@@ -30,10 +30,10 @@ From the repo root:
 godot --editor --path .testbed
 ```
 
-The testbed uses tracked relative links so the hidden workbench can see the repo's real `src/` and `test/` content without a legacy setup script.
+The testbed uses tracked relative links so the hidden workbench can see the repo's real `src/` content plus `.testbed/tests/` and `.testbed/scenes/` without a legacy setup script.
 
 ### Validation notes
 
 - The repo's GUT dependency is declared in `.testbed/addons.jsonc` and points at the repo's `/addons/gut` package subfolder.
-- `.testbed/src` and `.testbed/test` are tracked relative links into the repo root so the testbed can load the addon code and tests directly.
+- Repo-local unit tests now live under `.testbed/tests/`, while the manual workbench scene content lives under `.testbed/scenes/`.
 - Downstream repos should consume tagged releases of `aerobeat-core` in `tag` mode.
