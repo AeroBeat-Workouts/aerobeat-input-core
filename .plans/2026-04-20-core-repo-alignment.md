@@ -184,7 +184,7 @@ Common inventory conclusion:
   - `aerobeat-content-core`: `f926d68` — `Rewrite content core README and normalize license`
   - `aerobeat-asset-core`: `4aead55` — `Rewrite asset core README and normalize license`
   - `aerobeat-tool-core`: `901bf31` — `Rewrite tool core README and normalize license`
-- Remaining repo-local commit to land: `aerobeat-input-core` (includes the direct identity correction plus this plan update).
+- Repo-local commit pushed to `main` for `aerobeat-input-core`: `fe859a9` — `Align input core identity with lane architecture`.
 
 ---
 
