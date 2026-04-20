@@ -3,7 +3,7 @@ config_version=5
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [application]
-config/name="AeroBeat Core Testbed"
+config/name="AeroBeat Input Core Testbed"
 
 [debug]
 gdscript/warnings/untyped_declaration=1

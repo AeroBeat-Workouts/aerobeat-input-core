@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="AeroBeat Core"
-config/description="Core interfaces and utilities for AeroBeat ecosystem"
+config/name="AeroBeat Input Core"
+config/description="Shared input abstractions and provider contracts for the AeroBeat ecosystem"
 config/version="1.0.0"
 run/main_scene="res://scenes/test_scene.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")

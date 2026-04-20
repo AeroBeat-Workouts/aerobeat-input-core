@@ -1,6 +1,6 @@
-# aerobeat-core
+# aerobeat-input-core
 
-Shared AeroBeat foundation addon for core contracts, interfaces, enums, constants, and low-level utilities.
+Shared AeroBeat input abstractions, provider contracts, normalized input-facing enums, and input runtime interfaces.
 
 ## GodotEnv development flow
 
@@ -36,4 +36,4 @@ The testbed uses tracked relative links so the hidden workbench can see the repo
 
 - The repo's GUT dependency is declared in `.testbed/addons.jsonc` and points at the repo's `/addons/gut` package subfolder.
 - Repo-local unit tests now live under `.testbed/tests/`, while the manual workbench scene content lives under `.testbed/scenes/`.
-- Downstream repos should consume tagged releases of `aerobeat-core` in `tag` mode.
+- Downstream repos should consume tagged releases of `aerobeat-input-core` in `tag` mode.
