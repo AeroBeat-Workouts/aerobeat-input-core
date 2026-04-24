@@ -109,7 +109,7 @@ In the assembly consumer manifest (`REF-03`), updated `../aerobeat-assembly-comm
 
 **Commits:**
 - `64bbcf8` - Bump plugin.cfg version to 0.1.2
-- `Pending` - Plan update with coder validation evidence
+- `011de10` - Record v0.1.2 release consumer evidence
 
 **Lessons Learned:** When a consumer pin points at a release tag, plugin-internal metadata still needs its own release-truth pass. The clean fix here was not rewriting `v0.1.1`, but cutting `v0.1.2`, repinning, reinstalling, and verifying the installed payload directly before handoff.
 
