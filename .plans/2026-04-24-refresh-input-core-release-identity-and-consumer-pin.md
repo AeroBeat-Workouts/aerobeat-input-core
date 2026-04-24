@@ -72,9 +72,9 @@ So the cleanup we identified is really a release-consumer mismatch, not just a l
 - `../aerobeat-assembly-community/.plans/2026-04-24-rename-assembly-core-addon-key-to-aerobeat-input-core.md`
 - `.plans/2026-04-24-refresh-input-core-release-identity-and-consumer-pin.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Tagged the corrected current `main` state at commit `12daf1c77bcb3d80a38ffc98ef257f5ac6dcfa1c` as `v0.1.1` and pushed that tag to `origin`, with the tag SHA matching `HEAD` exactly (`git rev-list -n 1 v0.1.1` == `git rev-parse HEAD`) (`REF-01`, `REF-04`). In `../aerobeat-assembly-community/addons.jsonc`, the `aerobeat-input-core` consumer pin was updated from `"checkout": "v0.1.0"` to `"checkout": "v0.1.1"` (`REF-03`). After removing the stale installed/cache copies at `../aerobeat-assembly-community/addons/aerobeat-input-core` and `../aerobeat-assembly-community/.addons/aerobeat-input-core`, rerunning `godotenv addons install` resolved `aerobeat-input-core` from branch/tag `v0.1.1` and regenerated the mounted payload. The refreshed installed files now match current source identity exactly: `../aerobeat-assembly-community/addons/aerobeat-input-core/README.md` starts with `# aerobeat-input-core`, and `../aerobeat-assembly-community/addons/aerobeat-input-core/plugin.cfg` now reads `name="AeroBeat Input Core"` with description `"Shared input abstractions and provider contracts for the AeroBeat ecosystem"` (`REF-01`, `REF-02`, `REF-03`). I also updated the assembly rename plan (`REF-05`) with the exact new release-pin evidence so downstream audit notes no longer describe the branding drift as still outstanding.
 
 ---
 
