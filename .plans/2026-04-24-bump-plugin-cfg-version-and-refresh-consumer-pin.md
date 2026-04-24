@@ -93,26 +93,28 @@ In the assembly consumer manifest (`REF-03`), updated `../aerobeat-assembly-comm
 **Files Created/Deleted/Modified:**
 - `.plans/2026-04-24-bump-plugin-cfg-version-and-refresh-consumer-pin.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending independent QA/audit. Coder handoff evidence is ready: source commit `64bbcf8` (`Bump plugin.cfg version to 0.1.2`) is pushed to `main`; tag `v0.1.2` is pushed; `../aerobeat-assembly-community/addons.jsonc` now contains `8:      "checkout": "v0.1.2",`; and the refreshed installed payload at `../aerobeat-assembly-community/addons/aerobeat-input-core/plugin.cfg` now contains `5:version="0.1.2"`.
+**Results:** Independent QA/audit reran the evidence path instead of trusting the coder handoff. Source truth check passed in the core repo: `plugin.cfg` on `main` currently reads `5:version="0.1.2"` (`REF-01`), and `git show --stat --summary --oneline 64bbcf8` confirms the source bump commit only changed that file/version as claimed. Release-tag truth check also passed: local tag `v0.1.2` resolves to commit `64bbcf80556f333ec06ae734d7392f7d70e054d4`, `git show v0.1.2:plugin.cfg` reports `5:version="0.1.2"`, and `git ls-remote --tags origin refs/tags/v0.1.2 refs/tags/v0.1.2^{}` confirms the annotated tag object plus peeled commit are present on `origin` (`REF-02`).
+
+Assembly consumer truth check passed independently in `../aerobeat-assembly-community`: `addons.jsonc` contains `8:      "checkout": "v0.1.2",` (`REF-03`). I reran `godotenv addons install` from the assembly repo root and it resolved `aerobeat-input-core` specifically on branch/tag `v0.1.2`, then rechecked the installed payload: `../aerobeat-assembly-community/addons/aerobeat-input-core/plugin.cfg` contains `5:version="0.1.2"` (`REF-04`). A light import smoke check also passed independently: `godot --headless --path . --import --quit-after 1000` exited `0` after plugin initialization/class registration, with no addon-resolution failure. Auditor verdict: the consumer pin, installed payload, and tagged source now agree truthfully on `0.1.2`, so this slice is complete and bead `oc-76k` should close.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending QA/audit
+**Status:** ✅ Complete
 
-**What We Built:** Coder pass complete: `aerobeat-input-core` now publishes plugin metadata version `0.1.2`, tag `v0.1.2` is pushed, the assembly consumer is repinned to that tag, and the refreshed installed payload now self-reports `version="0.1.2"`.
+**What We Built:** `aerobeat-input-core` now truthfully publishes plugin metadata version `0.1.2`, release tag `v0.1.2` exists on `origin`, the assembly consumer is pinned to that tag, and a fresh reinstall in the assembly repo produces an installed `addons/aerobeat-input-core/plugin.cfg` that also reports `version="0.1.2"`.
 
-**Reference Check:** Coder evidence satisfies the implementation slice: `REF-01` source `plugin.cfg` now reads `version="0.1.2"`; `REF-02` pushed source commit `64bbcf8` plus pushed tag `v0.1.2` produce `git show v0.1.2:plugin.cfg` with `5:version="0.1.2"`; `REF-03` assembly manifest now contains `8:      "checkout": "v0.1.2",`; and `REF-04` refreshed installed payload now contains `5:version="0.1.2"`. Independent QA/audit remains for Task 3.
+**Reference Check:** `REF-01` satisfied independently: source `plugin.cfg` on `main` reads `5:version="0.1.2"`. `REF-02` satisfied independently: commit `64bbcf8` is the source bump commit, `git show v0.1.2:plugin.cfg` reports `5:version="0.1.2"`, and `git ls-remote --tags origin refs/tags/v0.1.2 refs/tags/v0.1.2^{}` confirms the pushed annotated tag plus peeled commit. `REF-03` satisfied independently: the assembly manifest still contains `8:      "checkout": "v0.1.2",`. `REF-04` satisfied independently after a fresh reinstall: `godotenv addons install` resolved `aerobeat-input-core` on `v0.1.2`, and the installed payload at `../aerobeat-assembly-community/addons/aerobeat-input-core/plugin.cfg` reads `5:version="0.1.2"`. Additional smoke validation passed: `godot --headless --path ../aerobeat-assembly-community --import --quit-after 1000` exited `0`, so the refreshed consumer state imports cleanly enough for this slice.
 
 **Commits:**
 - `64bbcf8` - Bump plugin.cfg version to 0.1.2
 - `011de10` - Record v0.1.2 release consumer evidence
 
-**Lessons Learned:** When a consumer pin points at a release tag, plugin-internal metadata still needs its own release-truth pass. The clean fix here was not rewriting `v0.1.1`, but cutting `v0.1.2`, repinning, reinstalling, and verifying the installed payload directly before handoff.
+**Lessons Learned:** Release-truth work needs all three layers checked independently: source metadata, pushed tag payload, and freshly installed consumer output. Re-running install/import during audit is what turns “the manifest says the right thing” into “the consumer is actually using the right thing.”
 
 ---
 
-*Completed on Pending QA/audit*
+*Completed on 2026-04-24*
