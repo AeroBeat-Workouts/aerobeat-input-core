@@ -1,49 +1,49 @@
 class_name InputManager
 extends Node
-## Central coordinator for managing multiple input providers in AeroBeat
+## Central coordinator for AeroBeat input providers.
 ##
-## The InputManager handles:
-## - Provider registration with automatic capability detection
-## - Priority-based auto-switching between input sources
-## - Signal proxying from the active provider to game code
-## - Graceful fallback when preferred inputs are unavailable
+## This manager preserves a future-friendly provider abstraction layer while
+## making the current product truth explicit: camera providers are the official
+## AeroBeat v1 gameplay default path.
 ##
-## Usage:
-##   1. Add InputManager to your scene
-##   2. Register providers via register_provider()
-##   3. Connect to InputManager signals for gameplay events
-##   4. Let InputManager handle provider switching automatically
+## Non-camera providers can still be registered for experimentation, tooling,
+## accessibility exploration, or future product slices, but they should not read
+## as equal-status official gameplay peers today. Mouse and touch remain useful
+## for menu/navigation surfaces and other deprioritized future input paths.
 
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
-## If true, automatically switch to higher-priority inputs when they become available
+## If true, automatically switch to the highest-priority available provider.
+## The default priority order is intentionally camera-first for v1 gameplay.
 @export var auto_switch_inputs: bool = true
 
-## Priority order for input providers (highest priority first)
-## Provider IDs should match the class_name or a unique identifier
+## Priority order for input providers (highest priority first).
+## Camera providers are the official gameplay-default path for v1.
+## Non-camera providers remain registered/future-friendly, but are deprioritized
+## so the runtime policy does not imply broad current gameplay parity.
 @export var input_priority: Array[String] = [
-	"xr_6dof",              # Highest priority - VR/AR controllers
-	"mediapipe_python",     # Desktop camera tracking
-	"mediapipe_native",     # Mobile native tracking
-	"joycon_hid",           # Nintendo Switch controllers
-	"gamepad",              # Standard game controllers
-	"mouse",                # Mouse input
-	"keyboard"              # Lowest priority - Keyboard input
+	"mediapipe_python",     # Preferred v1 desktop camera gameplay path
+	"mediapipe_native",     # Preferred v1 mobile/native camera gameplay path
+	"xr_6dof",              # Future / experimental richer provider path
+	"joycon_hid",           # Future / experimental non-camera gameplay path
+	"gamepad",              # Future / experimental non-camera gameplay path
+	"mouse",                # Supported for menu/navigation; not official v1 gameplay parity
+	"keyboard"              # Future / fallback input path; not official v1 gameplay parity
 ]
 
 # ============================================================================
 # SIGNALS: PROVIDER MANAGEMENT
 # ============================================================================
 
-## Emitted when a new provider is successfully registered
+## Emitted when a new provider is successfully registered.
 signal provider_registered(provider: AeroInputProvider)
 
-## Emitted when a provider is unregistered
+## Emitted when a provider is unregistered.
 signal provider_unregistered(provider_id: String)
 
-## Emitted when the active provider changes
+## Emitted when the active provider changes.
 signal active_provider_changed(provider: AeroInputProvider)
 
 # ============================================================================
@@ -105,23 +105,23 @@ signal slice_detected(direction: StringName, angle: float)
 # INTERNAL STATE
 # ============================================================================
 
-## Dictionary of registered providers: provider_id -> AeroInputProvider
+## Dictionary of registered providers: provider_id -> AeroInputProvider.
 var _providers: Dictionary = {}
 
-## Currently active provider
+## Currently active provider.
 var _active_provider: AeroInputProvider = null
 
-## Provider settings cache: provider_id -> settings_dict
+## Provider settings cache: provider_id -> settings_dict.
 var _provider_settings: Dictionary = {}
 
 # ============================================================================
 # PUBLIC API: PROVIDER REGISTRATION
 # ============================================================================
 
-## Register a new input provider
-## @param provider: The input provider instance to register
-## @param settings: Optional dictionary of settings for this provider
-## @return: true if registration succeeded, false otherwise
+## Register a new input provider.
+## @param provider: The input provider instance to register.
+## @param settings: Optional dictionary of settings for this provider.
+## @return: true if registration succeeded, false otherwise.
 func register_provider(provider: AeroInputProvider, settings: Dictionary = {}) -> bool:
 	if provider == null:
 		push_error("InputManager: Cannot register null provider")
@@ -133,31 +133,26 @@ func register_provider(provider: AeroInputProvider, settings: Dictionary = {}) -
 		push_warning("InputManager: Provider '%s' already registered" % provider_id)
 		return false
 	
-	# Test the provider with empty settings first
+	# Probe the provider with a lightweight startup check before registration.
 	if not provider.start(JSON.stringify({"test": true})):
 		push_warning("InputManager: Provider '%s' failed startup test" % provider_id)
 		return false
 	
-	# Stop after test
 	provider.stop()
 	
-	# Store provider and settings
 	_providers[provider_id] = provider
 	_provider_settings[provider_id] = settings
 	
-	# Connect signals
 	_connect_provider_signals(provider)
-	
 	provider_registered.emit(provider)
 	
-	# Auto-switch if enabled
 	if auto_switch_inputs:
 		_evaluate_provider_priority()
 	
 	return true
 
-## Unregister an input provider
-## @param provider_id: The ID of the provider to unregister
+## Unregister an input provider.
+## @param provider_id: The ID of the provider to unregister.
 func unregister_provider(provider_id: String) -> void:
 	if not _providers.has(provider_id):
 		push_warning("InputManager: Provider '%s' not found" % provider_id)
@@ -165,37 +160,33 @@ func unregister_provider(provider_id: String) -> void:
 	
 	var provider: AeroInputProvider = _providers[provider_id]
 	
-	# Stop if active
 	if _active_provider == provider:
 		provider.stop()
 		_active_provider = null
 	
-	# Disconnect signals
 	_disconnect_provider_signals(provider)
 	
-	# Remove from dictionaries
 	_providers.erase(provider_id)
 	_provider_settings.erase(provider_id)
 	
 	provider_unregistered.emit(provider_id)
 	
-	# Re-evaluate priority if auto-switching
 	if auto_switch_inputs:
 		_evaluate_provider_priority()
 
-## Get a registered provider by ID
-## @param provider_id: The provider ID to look up
-## @return: The provider instance, or null if not found
+## Get a registered provider by ID.
+## @param provider_id: The provider ID to look up.
+## @return: The provider instance, or null if not found.
 func get_provider(provider_id: String) -> AeroInputProvider:
 	return _providers.get(provider_id, null)
 
-## Get the currently active provider
-## @return: The active provider, or null if none active
+## Get the currently active provider.
+## @return: The active provider, or null if none active.
 func get_active_provider() -> AeroInputProvider:
 	return _active_provider
 
-## Get list of all registered provider IDs
-## @return: Array of provider ID strings
+## Get list of all registered provider IDs.
+## @return: Array of provider ID strings.
 func get_registered_providers() -> Array[String]:
 	return _providers.keys()
 
@@ -203,9 +194,9 @@ func get_registered_providers() -> Array[String]:
 # PUBLIC API: PROVIDER CONTROL
 # ============================================================================
 
-## Set a specific provider as active
-## @param provider: The provider to activate
-## @return: true if activation succeeded
+## Set a specific provider as active.
+## @param provider: The provider to activate.
+## @return: true if activation succeeded.
 func set_active_provider(provider: AeroInputProvider) -> bool:
 	if provider == null:
 		push_error("InputManager: Cannot activate null provider")
@@ -217,11 +208,9 @@ func set_active_provider(provider: AeroInputProvider) -> bool:
 		push_error("InputManager: Provider '%s' not registered" % provider_id)
 		return false
 	
-	# Stop current provider
 	if _active_provider != null and _active_provider != provider:
 		_active_provider.stop()
 	
-	# Start new provider
 	var settings := _provider_settings.get(provider_id, {})
 	var settings_json := JSON.stringify(settings)
 	
@@ -234,7 +223,7 @@ func set_active_provider(provider: AeroInputProvider) -> bool:
 	
 	return true
 
-## Stop the active provider
+## Stop the active provider.
 func stop_active_provider() -> void:
 	if _active_provider != null:
 		_active_provider.stop()
@@ -244,17 +233,17 @@ func stop_active_provider() -> void:
 # PUBLIC API: CAPABILITY CHECKS
 # ============================================================================
 
-## Check if the active provider supports a specific capability
-## @param capability: The Capability enum value to check
-## @return: true if the active provider supports the capability
+## Check if the active provider supports a specific optional capability.
+## @param capability: The Capability enum value to check.
+## @return: true if the active provider supports the capability.
 func active_provider_has_capability(capability: AeroInputProvider.Capability) -> bool:
 	if _active_provider == null:
 		return false
 	return _active_provider.has_capability(capability)
 
-## Check if any registered provider supports a specific capability
-## @param capability: The Capability enum value to check
-## @return: true if any provider supports the capability
+## Check if any registered provider supports a specific optional capability.
+## @param capability: The Capability enum value to check.
+## @return: true if any provider supports the capability.
 func any_provider_has_capability(capability: AeroInputProvider.Capability) -> bool:
 	for provider in _providers.values():
 		if provider.has_capability(capability):
@@ -266,26 +255,21 @@ func any_provider_has_capability(capability: AeroInputProvider.Capability) -> bo
 # ============================================================================
 
 func _connect_provider_signals(provider: AeroInputProvider) -> void:
-	# Lifecycle signals
 	provider.started.connect(func(): started.emit())
 	provider.stopped.connect(func(): stopped.emit())
 	provider.failed.connect(func(err): failed.emit(err))
 	
-	# Spatial tracking
 	provider.tracking_updated.connect(
 		func(h, lh, rh, lf, rf): tracking_updated.emit(h, lh, rh, lf, rf)
 	)
 	
-	# Check if provider has boxing signals
 	if provider.has_signal("punch_left"):
 		_connect_boxing_signals(provider)
 	
-	# Check if provider has flow signals
 	if provider.has_signal("slice_detected"):
 		_connect_flow_signals(provider)
 
 func _connect_boxing_signals(provider: AeroInputProvider) -> void:
-	# Stance & position
 	if provider.has_signal("stance_orthodox"):
 		provider.stance_orthodox.connect(func(): stance_orthodox.emit())
 	if provider.has_signal("stance_southpaw"):
@@ -295,7 +279,6 @@ func _connect_boxing_signals(provider: AeroInputProvider) -> void:
 	if provider.has_signal("height_changed"):
 		provider.height_changed.connect(func(t): height_changed.emit(t))
 	
-	# Punches
 	if provider.has_signal("punch_left"):
 		provider.punch_left.connect(func(p): punch_left.emit(p))
 	if provider.has_signal("punch_right"):
@@ -313,7 +296,6 @@ func _connect_boxing_signals(provider: AeroInputProvider) -> void:
 	if provider.has_signal("hook_right"):
 		provider.hook_right.connect(func(p): hook_right.emit(p))
 	
-	# Defensive
 	if provider.has_signal("block_start"):
 		provider.block_start.connect(func(): block_start.emit())
 	if provider.has_signal("block_end"):
@@ -327,7 +309,6 @@ func _connect_boxing_signals(provider: AeroInputProvider) -> void:
 	if provider.has_signal("duck_weave_right"):
 		provider.duck_weave_right.connect(func(): duck_weave_right.emit())
 	
-	# Special moves
 	if provider.has_signal("knee_strike_left"):
 		provider.knee_strike_left.connect(func(p): knee_strike_left.emit(p))
 	if provider.has_signal("knee_strike_right"):
@@ -346,8 +327,8 @@ func _connect_flow_signals(provider: AeroInputProvider) -> void:
 		provider.slice_detected.connect(func(d, a): slice_detected.emit(d, a))
 
 func _disconnect_provider_signals(provider: AeroInputProvider) -> void:
-	# Disconnect all signals (Godot handles this automatically when provider is freed,
-	# but we do it explicitly for clean management)
+	# Godot will usually clean these up when the provider is freed, but we keep the
+	# explicit disconnect pass for predictable manager lifecycle semantics.
 	var signals := provider.get_signal_list()
 	for sig in signals:
 		provider.disconnect(sig["name"], Callable())
@@ -360,7 +341,8 @@ func _evaluate_provider_priority() -> void:
 	if _providers.is_empty():
 		return
 	
-	# Find highest priority available provider
+	# Prefer the highest-ranked registered provider. The default list is ordered so
+	# camera providers become the active gameplay path before future-facing peers.
 	for provider_id in input_priority:
 		if _providers.has(provider_id):
 			var provider: AeroInputProvider = _providers[provider_id]
@@ -368,20 +350,19 @@ func _evaluate_provider_priority() -> void:
 				set_active_provider(provider)
 			return
 	
-	# No priority match - use first available
+	# If no configured priority entry matches, fall back to the first available
+	# provider without implying product-level parity.
 	if _active_provider == null:
 		var first_provider: AeroInputProvider = _providers.values()[0]
 		set_active_provider(first_provider)
 
 func _get_provider_id(provider: AeroInputProvider) -> String:
-	# Use class_name if available, otherwise fall back to instance ID
 	var script := provider.get_script()
 	if script != null and script is GDScript:
 		var global_name: String = script.get_global_name()
 		if global_name != "":
 			return global_name.to_snake_case()
 	
-	# Fallback to class name
 	return provider.get_class().to_snake_case()
 
 # ============================================================================
@@ -389,7 +370,6 @@ func _get_provider_id(provider: AeroInputProvider) -> String:
 # ============================================================================
 
 func _exit_tree() -> void:
-	# Stop all providers on exit
 	stop_active_provider()
 	
 	for provider in _providers.values():
