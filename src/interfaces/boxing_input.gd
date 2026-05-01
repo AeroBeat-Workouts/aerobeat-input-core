@@ -115,13 +115,12 @@ signal run_end
 # ============================================================================
 
 ## Override to report optional boxing capabilities.
-## Unsupported optional capabilities default to false until a concrete provider
-## advertises them explicitly.
+## Gesture recognition remains the expected hand-driven gameplay surface for
+## boxing, while lower-body and other richer hooks stay false until a concrete
+## provider explicitly advertises them.
 func has_capability(capability: Capability) -> bool:
 	match capability:
 		Capability.GESTURE_RECOGNITION:
-			return true
-		Capability.LOWER_BODY:
 			return true
 		_:
 			return false

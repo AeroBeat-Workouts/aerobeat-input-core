@@ -36,9 +36,9 @@ func test_flow_input_reports_gesture_capability_without_claiming_other_optional_
 	assert_false(provider.has_capability(AeroInputProvider.Capability.LOWER_BODY))
 	assert_false(provider.has_capability(AeroInputProvider.Capability.HAPTICS))
 
-func test_boxing_input_reports_gesture_and_lower_body_capabilities_as_provider_extensions():
+func test_boxing_input_reports_gesture_capability_without_claiming_lower_body_or_haptics_by_default():
 	var provider = autofree(BoxingInput.new())
 
 	assert_true(provider.has_capability(AeroInputProvider.Capability.GESTURE_RECOGNITION))
-	assert_true(provider.has_capability(AeroInputProvider.Capability.LOWER_BODY))
+	assert_false(provider.has_capability(AeroInputProvider.Capability.LOWER_BODY))
 	assert_false(provider.has_capability(AeroInputProvider.Capability.HAPTICS))
