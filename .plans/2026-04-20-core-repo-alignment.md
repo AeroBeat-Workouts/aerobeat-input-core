@@ -199,27 +199,62 @@ Common inventory conclusion:
 - all six local core repos
 
 **Files Created/Deleted/Modified:**
-- None expected from audit beyond plan updates
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-input-core/.plans/2026-04-20-core-repo-alignment.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Not started.
+**Results:**
+- Audit passed after independent file-level inspection across all six core repos.
+- `aerobeat-input-core` no longer presents itself as the old generic core in the targeted identity surfaces checked during audit: `README.md`, `plugin.cfg`, `.testbed/project.godot`, `project.godot.disabled`, `.testbed/scenes/test_scene.gd`, and `.testbed/scenes/test_scene.tscn` now consistently use `aerobeat-input-core` / `AeroBeat Input Core` lane-specific wording.
+- `aerobeat-ui-core` no longer uses stale `aerobeat-core` dependency naming in the targeted dependency surfaces checked during audit: `README.md`, `.testbed/addons.jsonc`, and `.testbed/tests/test_ui_core_base_classes.gd` now reference `aerobeat-input-core` consistently.
+- License normalization passed in all six repos: each repo now exposes only `LICENSE.md` at the repo root, and the SHA-256 hash for all six matched the `aerobeat-input-core/LICENSE.md` baseline (`86299535d4d06830eb8e53a37d074d7b51345eedfbe7edd89a1656bf35077662`).
+- README review passed: all six repos now use a clear repo-title-plus-purpose format and lane-correct descriptive sections. `aerobeat-input-core` and `aerobeat-ui-core` intentionally include GodotEnv/testbed workflow sections because they are addon/testbed repos, while `feature`, `content`, `asset`, and `tool` use aligned architecture-role / intended-consumers / repository-status sections appropriate to contract-only lanes.
+- Old-name grep was clean for live repo surfaces in `aerobeat-input-core` and `aerobeat-ui-core`; remaining `aerobeat-core` / `AeroBeat Core` matches were limited to this historical plan file and Beads interaction metadata, not shipping repo surfaces.
+- Files inspected during audit:
+  - `aerobeat-input-core/README.md`
+  - `aerobeat-input-core/plugin.cfg`
+  - `aerobeat-input-core/.testbed/project.godot`
+  - `aerobeat-input-core/project.godot.disabled`
+  - `aerobeat-input-core/.testbed/scenes/test_scene.gd`
+  - `aerobeat-input-core/.testbed/scenes/test_scene.tscn`
+  - `aerobeat-input-core/LICENSE.md`
+  - `aerobeat-ui-core/README.md`
+  - `aerobeat-ui-core/.testbed/addons.jsonc`
+  - `aerobeat-ui-core/.testbed/tests/test_ui_core_base_classes.gd`
+  - `aerobeat-ui-core/plugin.cfg`
+  - `aerobeat-ui-core/.testbed/project.godot`
+  - `aerobeat-ui-core/LICENSE.md`
+  - `aerobeat-feature-core/README.md`
+  - `aerobeat-feature-core/LICENSE.md`
+  - `aerobeat-content-core/README.md`
+  - `aerobeat-content-core/LICENSE.md`
+  - `aerobeat-asset-core/README.md`
+  - `aerobeat-asset-core/LICENSE.md`
+  - `aerobeat-tool-core/README.md`
+  - `aerobeat-tool-core/LICENSE.md`
+- No remaining repo-surface gaps were found in the audited scope.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending execution.
+**What We Built:** All six AeroBeat core repos are now aligned to the lane-based architecture: `aerobeat-input-core` uses lane-correct identity surfaces, `aerobeat-ui-core` points at `aerobeat-input-core` instead of the stale generic dependency name, every core repo uses the shared `LICENSE.md` baseline, and each README now presents a consistent lane-specific purpose.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-01` through `REF-06` were directly inspected during the audit and passed the requested repo-surface checks. The resulting lane descriptions and repo roles are consistent with the six-core architecture direction in `REF-07` and `REF-08`. No deliberate deviations were identified.
 
 **Commits:**
-- Pending
+- `fe859a9` - Align input core identity with lane architecture
+- `f80c2ff` - Update core repo alignment plan progress
+- `2b756f0` - Align UI core dependency naming and license
+- `64ee1fe` - Rewrite feature core README and normalize license
+- `f926d68` - Rewrite content core README and normalize license
+- `4aead55` - Rewrite asset core README and normalize license
+- `901bf31` - Rewrite tool core README and normalize license
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** For multi-repo naming migrations, the fastest reliable audit is to pair targeted surface inspection with a repo-root license hash check and an old-name grep that excludes planning/history artifacts.
 
 ---
 
-*Completed on Pending*
+*Completed on 2026-04-20*
