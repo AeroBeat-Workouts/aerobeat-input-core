@@ -88,8 +88,8 @@ signal sidestep_left_start
 signal sidestep_left_end
 signal sidestep_right_start
 signal sidestep_right_end
-signal knee_strike_left(power: float)
-signal knee_strike_right(power: float)
+signal knee_left(power: float)
+signal knee_right(power: float)
 signal leg_lift_left_start
 signal leg_lift_left_end
 signal leg_lift_right_start
@@ -99,7 +99,10 @@ signal leg_lift_right_end
 # SIGNALS: FLOW GAMEPLAY INTENTS (Proxied from active provider)
 # ============================================================================
 
-signal slice_detected(placement: StringName, direction: StringName)
+signal swing_left(placement: StringName, direction: StringName)
+signal swing_right(placement: StringName, direction: StringName)
+signal trail_left(placement: StringName, direction: StringName)
+signal trail_right(placement: StringName, direction: StringName)
 
 # ============================================================================
 # INTERNAL STATE
@@ -269,7 +272,10 @@ func _connect_provider_signals(provider: AeroInputProvider) -> void:
 	if provider.has_signal("punch_left"):
 		_connect_boxing_signals(provider)
 	
-	if provider.has_signal("slice_detected"):
+	if provider.has_signal("swing_left") \
+	or provider.has_signal("swing_right") \
+	or provider.has_signal("trail_left") \
+	or provider.has_signal("trail_right"):
 		_connect_flow_signals(provider)
 
 func _connect_boxing_signals(provider: AeroInputProvider) -> void:
@@ -311,10 +317,10 @@ func _connect_boxing_signals(provider: AeroInputProvider) -> void:
 	if provider.has_signal("sidestep_right_end"):
 		provider.sidestep_right_end.connect(func(): sidestep_right_end.emit())
 	
-	if provider.has_signal("knee_strike_left"):
-		provider.knee_strike_left.connect(func(p): knee_strike_left.emit(p))
-	if provider.has_signal("knee_strike_right"):
-		provider.knee_strike_right.connect(func(p): knee_strike_right.emit(p))
+	if provider.has_signal("knee_left"):
+		provider.knee_left.connect(func(p): knee_left.emit(p))
+	if provider.has_signal("knee_right"):
+		provider.knee_right.connect(func(p): knee_right.emit(p))
 	if provider.has_signal("leg_lift_left_start"):
 		provider.leg_lift_left_start.connect(func(): leg_lift_left_start.emit())
 	if provider.has_signal("leg_lift_left_end"):
@@ -325,8 +331,14 @@ func _connect_boxing_signals(provider: AeroInputProvider) -> void:
 		provider.leg_lift_right_end.connect(func(): leg_lift_right_end.emit())
 
 func _connect_flow_signals(provider: AeroInputProvider) -> void:
-	if provider.has_signal("slice_detected"):
-		provider.slice_detected.connect(func(p, d): slice_detected.emit(p, d))
+	if provider.has_signal("swing_left"):
+		provider.swing_left.connect(func(p, d): swing_left.emit(p, d))
+	if provider.has_signal("swing_right"):
+		provider.swing_right.connect(func(p, d): swing_right.emit(p, d))
+	if provider.has_signal("trail_left"):
+		provider.trail_left.connect(func(p, d): trail_left.emit(p, d))
+	if provider.has_signal("trail_right"):
+		provider.trail_right.connect(func(p, d): trail_right.emit(p, d))
 	if provider.has_signal("squat_start"):
 		provider.squat_start.connect(func(): squat_start.emit())
 	if provider.has_signal("squat_end"):

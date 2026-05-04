@@ -52,7 +52,7 @@ func _get_class_info() -> String:
 	info += "  • MODE_3D (optional richer provider coordinates)\n"
 	info += "\nIntent Contract Highlights:\n"
 	info += "  • Boxing: punch_left / punch_right, guard_start / guard_end\n"
-	info += "  • Flow: slice_detected(placement, direction)\n"
+	info += "  • Flow: swing_left/right + trail_left/right with placement + direction\n"
 	info += "  • State intents: squat / lean / sidestep use start/end pairs\n"
 	info += "\nOptional Capabilities:\n"
 	info += "  • GESTURE_RECOGNITION\n"

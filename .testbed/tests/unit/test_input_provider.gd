@@ -65,8 +65,8 @@ func test_boxing_input_exposes_v1_intent_signals_and_omits_retired_aliases():
 		"sidestep_left_end",
 		"sidestep_right_start",
 		"sidestep_right_end",
-		"knee_strike_left",
-		"knee_strike_right",
+		"knee_left",
+		"knee_right",
 		"leg_lift_left_start",
 		"leg_lift_left_end",
 		"leg_lift_right_start",
@@ -84,15 +84,22 @@ func test_boxing_input_exposes_v1_intent_signals_and_omits_retired_aliases():
 		"location_changed",
 		"height_changed",
 		"run_start",
-		"run_end"
+		"run_end",
+		"run_in_place",
+		"slice_detected",
+		"knee_strike_left",
+		"knee_strike_right"
 	]:
 		assert_false(provider.has_signal(signal_name), "Expected BoxingInput to omit '%s'" % signal_name)
 
-func test_flow_input_exposes_v1_slice_and_state_signals():
+func test_flow_input_exposes_v1_motion_family_and_state_signals():
 	var provider = autofree(FlowInput.new())
 
 	for signal_name in [
-		"slice_detected",
+		"swing_left",
+		"swing_right",
+		"trail_left",
+		"trail_right",
 		"squat_start",
 		"squat_end",
 		"lean_left_start",
@@ -110,17 +117,20 @@ func test_flow_input_exposes_v1_slice_and_state_signals():
 		"stance_orthodox",
 		"stance_southpaw",
 		"location_changed",
-		"height_changed"
+		"height_changed",
+		"run_in_place",
+		"slice_detected"
 	]:
 		assert_false(provider.has_signal(signal_name), "Expected FlowInput to omit '%s'" % signal_name)
 
-func test_flow_slice_signal_keeps_placement_and_direction_as_distinct_args():
+func test_flow_motion_family_signals_keep_placement_and_direction_as_distinct_args():
 	var provider = autofree(FlowInput.new())
-	var signal_info = _get_signal_info(provider, "slice_detected")
 
-	assert_eq(signal_info["args"].size(), 2)
-	assert_eq(signal_info["args"][0]["name"], &"placement")
-	assert_eq(signal_info["args"][1]["name"], &"direction")
+	for signal_name in ["swing_left", "swing_right", "trail_left", "trail_right"]:
+		var signal_info = _get_signal_info(provider, signal_name)
+		assert_eq(signal_info["args"].size(), 2, "Expected %s to keep two semantic args" % signal_name)
+		assert_eq(signal_info["args"][0]["name"], &"placement")
+		assert_eq(signal_info["args"][1]["name"], &"direction")
 
 func test_input_manager_proxies_v1_intent_surface():
 	var manager = autofree(InputManager.new())
@@ -136,7 +146,12 @@ func test_input_manager_proxies_v1_intent_surface():
 		"lean_left_end",
 		"sidestep_left_start",
 		"sidestep_left_end",
-		"slice_detected"
+		"knee_left",
+		"knee_right",
+		"swing_left",
+		"swing_right",
+		"trail_left",
+		"trail_right"
 	]:
 		assert_true(manager.has_signal(signal_name), "Expected InputManager to proxy '%s'" % signal_name)
 
@@ -150,13 +165,18 @@ func test_input_manager_proxies_v1_intent_surface():
 		"location_changed",
 		"height_changed",
 		"run_start",
-		"run_end"
+		"run_end",
+		"run_in_place",
+		"slice_detected",
+		"knee_strike_left",
+		"knee_strike_right"
 	]:
 		assert_false(manager.has_signal(signal_name), "Expected InputManager to omit '%s'" % signal_name)
 
-	var slice_signal_info = _get_signal_info(manager, "slice_detected")
-	assert_eq(slice_signal_info["args"][0]["name"], &"placement")
-	assert_eq(slice_signal_info["args"][1]["name"], &"direction")
+	for signal_name in ["swing_left", "swing_right", "trail_left", "trail_right"]:
+		var signal_info = _get_signal_info(manager, signal_name)
+		assert_eq(signal_info["args"][0]["name"], &"placement")
+		assert_eq(signal_info["args"][1]["name"], &"direction")
 
 func _get_signal_info(target: Object, signal_name: String) -> Dictionary:
 	for signal_info in target.get_signal_list():

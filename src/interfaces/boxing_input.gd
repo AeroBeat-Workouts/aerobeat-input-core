@@ -9,7 +9,7 @@ extends AeroInputProvider
 ## - straight punches are punch_left / punch_right
 ## - guard is the canonical defensive wording
 ## - authored chart semantics like orthodox / southpaw are not tracked input events
-## - run_in_place is not part of the first implementation pass
+## - run_in_place is a legitimate authored/chart beat, but not a tracked provider event in the first implementation pass
 ## - state-like movement intents use start/end style signals
 ##
 ## Raw pose, observation streams, and richer provider-specific body data remain
@@ -87,13 +87,13 @@ signal sidestep_right_end
 # SIGNALS: OPTIONAL / FUTURE-FACING LOWER-BODY EXTENSIONS
 # ============================================================================
 
-## Emitted when a left knee strike is detected by a provider with lower-body support.
-## @param power: Strike power from 0.0 to 1.0
-signal knee_strike_left(power: float)
+## Emitted when a left knee intent is detected by a provider with lower-body support.
+## @param power: Knee power from 0.0 to 1.0
+signal knee_left(power: float)
 
-## Emitted when a right knee strike is detected by a provider with lower-body support.
-## @param power: Strike power from 0.0 to 1.0
-signal knee_strike_right(power: float)
+## Emitted when a right knee intent is detected by a provider with lower-body support.
+## @param power: Knee power from 0.0 to 1.0
+signal knee_right(power: float)
 
 ## Emitted when the player begins lifting the left leg.
 signal leg_lift_left_start

@@ -41,7 +41,7 @@ The v1 Boxing contract is intentionally authored around readable gameplay intent
   - `sidestep_left_start` / `sidestep_left_end`
   - `sidestep_right_start` / `sidestep_right_end`
 - Optional lower-body extension hooks remain separate and obviously optional:
-  - `knee_strike_left` / `knee_strike_right`
+  - `knee_left` / `knee_right`
   - `leg_lift_left_start` / `leg_lift_left_end`
   - `leg_lift_right_start` / `leg_lift_right_end`
 
@@ -49,25 +49,32 @@ Not part of the v1 provider contract:
 
 - `jab` / `cross` naming for straight punches
 - tracked `orthodox` / `southpaw` events
-- `run_in_place` provider events in the first implementation pass
+- `run_in_place` provider events in the first implementation pass, even though `run_in_place` remains a legitimate chart/gameplay beat
 
 ### Flow v1 surface
 
-Flow detectors should emit a stable two-part slice intent:
+Flow detectors should emit concrete gameplay-facing motion families rather than one overly generic slice event.
+
+The approved v1 provider-facing Flow families are:
+
+- `swing_left(placement, direction)`
+- `swing_right(placement, direction)`
+- `trail_left(placement, direction)`
+- `trail_right(placement, direction)`
+
+For each family:
 
 - `placement`: the authored **pass-through location**
 - `direction`: the authored **follow-through guidance**
 
 These are different semantics and must not be blurred.
 
-The contract exposes this as:
-
-- `slice_detected(placement, direction)`
-
 Typical authored examples:
 
 - `placement`: `left`, `center`, `right`
 - `direction`: `left`, `right`, `up`, `down`
+
+Authored `warn_*` / `reward_*` semantics stay above the provider layer in this first pass rather than becoming distinct detector events. `run_in_place` is also a legitimate authored Flow beat, but remains informational only and is not a tracked provider event in this first pass.
 
 Flow also shares the same state-like movement style for obstacle/body intents:
 

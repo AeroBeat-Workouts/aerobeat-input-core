@@ -10,19 +10,36 @@ extends AeroInputProvider
 ## - slice direction is the intended follow-through guidance after that contact
 ## - placement and direction are different semantics and must not be blurred
 ## - authored stance semantics like orthodox / southpaw are not tracked input events
+## - warn_* / reward_* remain authored Flow semantics, not separate provider gestures
+## - run_in_place is a legitimate authored Flow beat, but not a tracked provider event in the first pass
 ## - state-like movement intents use start/end style signals
 ##
 ## Raw pose / observation data remains provider-side and optional; it does not
 ## replace this gameplay intent contract.
 
 # ============================================================================
-# SIGNALS: FLOW STRIKE INTENTS
+# SIGNALS: FLOW MOTION-FAMILY INTENTS
 # ============================================================================
 
-## Emitted when a flow slice intent is detected.
-## @param placement: Authored pass-through location, typically "left", "center", or "right"
-## @param direction: Follow-through guidance, typically "left", "right", "up", or "down"
-signal slice_detected(placement: StringName, direction: StringName)
+## Emitted when a left-handed swing family intent is detected.
+## @param placement: Authored pass-through location for the beat family
+## @param direction: Authored follow-through guidance for the beat family
+signal swing_left(placement: StringName, direction: StringName)
+
+## Emitted when a right-handed swing family intent is detected.
+## @param placement: Authored pass-through location for the beat family
+## @param direction: Authored follow-through guidance for the beat family
+signal swing_right(placement: StringName, direction: StringName)
+
+## Emitted when a left-handed trail family intent is detected.
+## @param placement: Authored pass-through location for the beat family
+## @param direction: Authored follow-through guidance for the beat family
+signal trail_left(placement: StringName, direction: StringName)
+
+## Emitted when a right-handed trail family intent is detected.
+## @param placement: Authored pass-through location for the beat family
+## @param direction: Authored follow-through guidance for the beat family
+signal trail_right(placement: StringName, direction: StringName)
 
 # ============================================================================
 # SIGNALS: MOVEMENT / STATE INTENTS
