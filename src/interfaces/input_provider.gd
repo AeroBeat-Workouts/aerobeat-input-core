@@ -99,6 +99,18 @@ func is_tracking() -> bool:
 	push_error("AeroInputProvider: is_tracking() must be overridden")
 	return false
 
+## Returns the stable provider identity used for registration and priority selection.
+## Concrete providers should override this when their official runtime identity
+## must stay stable regardless of wrapper script names or assembly mount aliases.
+func get_provider_id() -> String:
+	var script: Variant = get_script()
+	if script != null and script is GDScript:
+		var global_name: String = String(script.get_global_name()).strip_edges()
+		if global_name != "":
+			return global_name.to_snake_case()
+
+	return String(get_class()).strip_edges().to_snake_case()
+
 ## Returns whether this specific provider supports an optional capability.
 ## @param capability: The Capability enum value to check.
 func has_capability(capability: Capability) -> bool:

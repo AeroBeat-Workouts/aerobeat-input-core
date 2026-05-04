@@ -188,7 +188,10 @@ func get_active_provider() -> AeroInputProvider:
 ## Get list of all registered provider IDs.
 ## @return: Array of provider ID strings.
 func get_registered_providers() -> Array[String]:
-	return _providers.keys()
+	var provider_ids: Array[String] = []
+	for provider_id in _providers.keys():
+		provider_ids.append(String(provider_id))
+	return provider_ids
 
 # ============================================================================
 # PUBLIC API: PROVIDER CONTROL
@@ -211,8 +214,8 @@ func set_active_provider(provider: AeroInputProvider) -> bool:
 	if _active_provider != null and _active_provider != provider:
 		_active_provider.stop()
 	
-	var settings := _provider_settings.get(provider_id, {})
-	var settings_json := JSON.stringify(settings)
+	var settings: Dictionary = _provider_settings.get(provider_id, {})
+	var settings_json: String = JSON.stringify(settings)
 	
 	if not provider.start(settings_json):
 		push_error("InputManager: Failed to start provider '%s'" % provider_id)
@@ -357,13 +360,17 @@ func _evaluate_provider_priority() -> void:
 		set_active_provider(first_provider)
 
 func _get_provider_id(provider: AeroInputProvider) -> String:
-	var script := provider.get_script()
+	var provider_id: String = String(provider.get_provider_id()).strip_edges().to_snake_case()
+	if provider_id != "":
+		return provider_id
+
+	var script: Variant = provider.get_script()
 	if script != null and script is GDScript:
-		var global_name: String = script.get_global_name()
+		var global_name: String = String(script.get_global_name()).strip_edges()
 		if global_name != "":
 			return global_name.to_snake_case()
 	
-	return provider.get_class().to_snake_case()
+	return String(provider.get_class()).strip_edges().to_snake_case()
 
 # ============================================================================
 # CLEANUP
