@@ -2,40 +2,61 @@ class_name FlowInput
 extends AeroInputProvider
 ## Interface for AeroBeat Flow gameplay input providers.
 ##
-## Flow remains a camera-first AeroBeat gameplay mode in v1. This contract keeps
-## the signal shape useful for future providers, but its default framing should be
-## read through camera-based motion interpretation first, not controller-first or
-## sword-sim parity.
+## Flow is a camera-first gameplay mode in v1. This contract defines the stable
+## gameplay-facing intent surface detectors should emit into.
 ##
-## Providers should emit the signals they can confidently infer from tracked body
-## motion. Future non-camera implementations may reuse the same contract.
+## Important v1 rules:
+## - slice placement is the pass-through location the chart authored
+## - slice direction is the intended follow-through guidance after that contact
+## - placement and direction are different semantics and must not be blurred
+## - authored stance semantics like orthodox / southpaw are not tracked input events
+## - state-like movement intents use start/end style signals
+##
+## Raw pose / observation data remains provider-side and optional; it does not
+## replace this gameplay intent contract.
 
 # ============================================================================
-# SIGNALS: FLOW GESTURE DETECTION
+# SIGNALS: FLOW STRIKE INTENTS
 # ============================================================================
 
-## Emitted when a directional flow slice gesture is detected.
-## @param direction: Slice direction - "left", "right", "up", or "down"
-## @param angle: Estimated hand/arm motion angle in degrees
-signal slice_detected(direction: StringName, angle: float)
+## Emitted when a flow slice intent is detected.
+## @param placement: Authored pass-through location, typically "left", "center", or "right"
+## @param direction: Follow-through guidance, typically "left", "right", "up", or "down"
+signal slice_detected(placement: StringName, direction: StringName)
 
 # ============================================================================
-# SIGNALS: STANCE & POSITION (Shared with Boxing)
+# SIGNALS: MOVEMENT / STATE INTENTS
 # ============================================================================
 
-## Emitted when player assumes standard stance (left side forward).
-signal stance_orthodox
+## Emitted when the player begins a squat.
+signal squat_start
 
-## Emitted when player assumes southpaw stance (right side forward).
-signal stance_southpaw
+## Emitted when the player ends a squat.
+signal squat_end
 
-## Emitted when player location changes.
-## @param zone: "left", "center", or "right"
-signal location_changed(zone: StringName)
+## Emitted when the player begins leaning left.
+signal lean_left_start
 
-## Emitted when player height changes.
-## @param type: "stand" or "squat"
-signal height_changed(type: StringName)
+## Emitted when the player stops leaning left.
+signal lean_left_end
+
+## Emitted when the player begins leaning right.
+signal lean_right_start
+
+## Emitted when the player stops leaning right.
+signal lean_right_end
+
+## Emitted when the player begins a left sidestep.
+signal sidestep_left_start
+
+## Emitted when the player completes or exits a left sidestep.
+signal sidestep_left_end
+
+## Emitted when the player begins a right sidestep.
+signal sidestep_right_start
+
+## Emitted when the player completes or exits a right sidestep.
+signal sidestep_right_end
 
 # ============================================================================
 # CAPABILITY CHECK

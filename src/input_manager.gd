@@ -6,10 +6,10 @@ extends Node
 ## making the current product truth explicit: camera providers are the official
 ## AeroBeat v1 gameplay default path.
 ##
-## Non-camera providers can still be registered for experimentation, tooling,
-## accessibility exploration, or future product slices, but they should not read
-## as equal-status official gameplay peers today. Mouse and touch remain useful
-## for menu/navigation surfaces and other deprioritized future input paths.
+## Its gameplay-facing signals mirror the stable v1 intent contracts exposed by
+## FlowInput and BoxingInput. Optional provider observation data can still flow
+## through the base AeroInputProvider channel, but that observation layer is not
+## the primary gameplay contract.
 
 # ============================================================================
 # CONFIGURATION
@@ -55,7 +55,7 @@ signal stopped
 signal failed(error: String)
 
 # ============================================================================
-# SIGNALS: SPATIAL TRACKING (Proxied from active provider)
+# SIGNALS: OPTIONAL OBSERVATION / SPATIAL FEED
 # ============================================================================
 
 signal tracking_updated(
@@ -67,39 +67,39 @@ signal tracking_updated(
 )
 
 # ============================================================================
-# SIGNALS: BOXING GESTURES (Proxied from active provider)
+# SIGNALS: BOXING GAMEPLAY INTENTS (Proxied from active provider)
 # ============================================================================
 
-signal stance_orthodox
-signal stance_southpaw
-signal location_changed(zone: StringName)
-signal height_changed(type: StringName)
 signal punch_left(power: float)
 signal punch_right(power: float)
 signal uppercut_left(power: float)
 signal uppercut_right(power: float)
-signal cross_left(power: float)
-signal cross_right(power: float)
 signal hook_left(power: float)
 signal hook_right(power: float)
-signal block_start
-signal block_end
-signal weave_left
-signal weave_right
-signal duck_weave_left
-signal duck_weave_right
+signal guard_start
+signal guard_end
+signal squat_start
+signal squat_end
+signal lean_left_start
+signal lean_left_end
+signal lean_right_start
+signal lean_right_end
+signal sidestep_left_start
+signal sidestep_left_end
+signal sidestep_right_start
+signal sidestep_right_end
 signal knee_strike_left(power: float)
 signal knee_strike_right(power: float)
-signal leg_lift_left
-signal leg_lift_right
-signal run_start
-signal run_end
+signal leg_lift_left_start
+signal leg_lift_left_end
+signal leg_lift_right_start
+signal leg_lift_right_end
 
 # ============================================================================
-# SIGNALS: FLOW GESTURES (Proxied from active provider)
+# SIGNALS: FLOW GAMEPLAY INTENTS (Proxied from active provider)
 # ============================================================================
 
-signal slice_detected(direction: StringName, angle: float)
+signal slice_detected(placement: StringName, direction: StringName)
 
 # ============================================================================
 # INTERNAL STATE
@@ -273,15 +273,6 @@ func _connect_provider_signals(provider: AeroInputProvider) -> void:
 		_connect_flow_signals(provider)
 
 func _connect_boxing_signals(provider: AeroInputProvider) -> void:
-	if provider.has_signal("stance_orthodox"):
-		provider.stance_orthodox.connect(func(): stance_orthodox.emit())
-	if provider.has_signal("stance_southpaw"):
-		provider.stance_southpaw.connect(func(): stance_southpaw.emit())
-	if provider.has_signal("location_changed"):
-		provider.location_changed.connect(func(z): location_changed.emit(z))
-	if provider.has_signal("height_changed"):
-		provider.height_changed.connect(func(t): height_changed.emit(t))
-	
 	if provider.has_signal("punch_left"):
 		provider.punch_left.connect(func(p): punch_left.emit(p))
 	if provider.has_signal("punch_right"):
@@ -290,44 +281,72 @@ func _connect_boxing_signals(provider: AeroInputProvider) -> void:
 		provider.uppercut_left.connect(func(p): uppercut_left.emit(p))
 	if provider.has_signal("uppercut_right"):
 		provider.uppercut_right.connect(func(p): uppercut_right.emit(p))
-	if provider.has_signal("cross_left"):
-		provider.cross_left.connect(func(p): cross_left.emit(p))
-	if provider.has_signal("cross_right"):
-		provider.cross_right.connect(func(p): cross_right.emit(p))
 	if provider.has_signal("hook_left"):
 		provider.hook_left.connect(func(p): hook_left.emit(p))
 	if provider.has_signal("hook_right"):
 		provider.hook_right.connect(func(p): hook_right.emit(p))
 	
-	if provider.has_signal("block_start"):
-		provider.block_start.connect(func(): block_start.emit())
-	if provider.has_signal("block_end"):
-		provider.block_end.connect(func(): block_end.emit())
-	if provider.has_signal("weave_left"):
-		provider.weave_left.connect(func(): weave_left.emit())
-	if provider.has_signal("weave_right"):
-		provider.weave_right.connect(func(): weave_right.emit())
-	if provider.has_signal("duck_weave_left"):
-		provider.duck_weave_left.connect(func(): duck_weave_left.emit())
-	if provider.has_signal("duck_weave_right"):
-		provider.duck_weave_right.connect(func(): duck_weave_right.emit())
+	if provider.has_signal("guard_start"):
+		provider.guard_start.connect(func(): guard_start.emit())
+	if provider.has_signal("guard_end"):
+		provider.guard_end.connect(func(): guard_end.emit())
+	if provider.has_signal("squat_start"):
+		provider.squat_start.connect(func(): squat_start.emit())
+	if provider.has_signal("squat_end"):
+		provider.squat_end.connect(func(): squat_end.emit())
+	if provider.has_signal("lean_left_start"):
+		provider.lean_left_start.connect(func(): lean_left_start.emit())
+	if provider.has_signal("lean_left_end"):
+		provider.lean_left_end.connect(func(): lean_left_end.emit())
+	if provider.has_signal("lean_right_start"):
+		provider.lean_right_start.connect(func(): lean_right_start.emit())
+	if provider.has_signal("lean_right_end"):
+		provider.lean_right_end.connect(func(): lean_right_end.emit())
+	if provider.has_signal("sidestep_left_start"):
+		provider.sidestep_left_start.connect(func(): sidestep_left_start.emit())
+	if provider.has_signal("sidestep_left_end"):
+		provider.sidestep_left_end.connect(func(): sidestep_left_end.emit())
+	if provider.has_signal("sidestep_right_start"):
+		provider.sidestep_right_start.connect(func(): sidestep_right_start.emit())
+	if provider.has_signal("sidestep_right_end"):
+		provider.sidestep_right_end.connect(func(): sidestep_right_end.emit())
 	
 	if provider.has_signal("knee_strike_left"):
 		provider.knee_strike_left.connect(func(p): knee_strike_left.emit(p))
 	if provider.has_signal("knee_strike_right"):
 		provider.knee_strike_right.connect(func(p): knee_strike_right.emit(p))
-	if provider.has_signal("leg_lift_left"):
-		provider.leg_lift_left.connect(func(): leg_lift_left.emit())
-	if provider.has_signal("leg_lift_right"):
-		provider.leg_lift_right.connect(func(): leg_lift_right.emit())
-	if provider.has_signal("run_start"):
-		provider.run_start.connect(func(): run_start.emit())
-	if provider.has_signal("run_end"):
-		provider.run_end.connect(func(): run_end.emit())
+	if provider.has_signal("leg_lift_left_start"):
+		provider.leg_lift_left_start.connect(func(): leg_lift_left_start.emit())
+	if provider.has_signal("leg_lift_left_end"):
+		provider.leg_lift_left_end.connect(func(): leg_lift_left_end.emit())
+	if provider.has_signal("leg_lift_right_start"):
+		provider.leg_lift_right_start.connect(func(): leg_lift_right_start.emit())
+	if provider.has_signal("leg_lift_right_end"):
+		provider.leg_lift_right_end.connect(func(): leg_lift_right_end.emit())
 
 func _connect_flow_signals(provider: AeroInputProvider) -> void:
 	if provider.has_signal("slice_detected"):
-		provider.slice_detected.connect(func(d, a): slice_detected.emit(d, a))
+		provider.slice_detected.connect(func(p, d): slice_detected.emit(p, d))
+	if provider.has_signal("squat_start"):
+		provider.squat_start.connect(func(): squat_start.emit())
+	if provider.has_signal("squat_end"):
+		provider.squat_end.connect(func(): squat_end.emit())
+	if provider.has_signal("lean_left_start"):
+		provider.lean_left_start.connect(func(): lean_left_start.emit())
+	if provider.has_signal("lean_left_end"):
+		provider.lean_left_end.connect(func(): lean_left_end.emit())
+	if provider.has_signal("lean_right_start"):
+		provider.lean_right_start.connect(func(): lean_right_start.emit())
+	if provider.has_signal("lean_right_end"):
+		provider.lean_right_end.connect(func(): lean_right_end.emit())
+	if provider.has_signal("sidestep_left_start"):
+		provider.sidestep_left_start.connect(func(): sidestep_left_start.emit())
+	if provider.has_signal("sidestep_left_end"):
+		provider.sidestep_left_end.connect(func(): sidestep_left_end.emit())
+	if provider.has_signal("sidestep_right_start"):
+		provider.sidestep_right_start.connect(func(): sidestep_right_start.emit())
+	if provider.has_signal("sidestep_right_end"):
+		provider.sidestep_right_end.connect(func(): sidestep_right_end.emit())
 
 func _disconnect_provider_signals(provider: AeroInputProvider) -> void:
 	# Godot will usually clean these up when the provider is freed, but we keep the

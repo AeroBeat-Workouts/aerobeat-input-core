@@ -2,122 +2,119 @@ class_name BoxingInput
 extends AeroInputProvider
 ## Interface for AeroBeat Boxing gameplay input providers.
 ##
-## Boxing is an active camera-first gameplay mode in v1. This contract preserves
-## richer gesture hooks for future providers, but callers should not assume that
-## every signal below is universally available from every current implementation.
+## Boxing is an active camera-first gameplay mode in v1. This contract defines
+## the gameplay-facing intent events detectors should emit into.
 ##
-## Hand-driven punches, stance, and readable camera motion are the primary v1
-## gameplay focus. Lower-body and specialty actions remain optional,
-## provider-dependent, and future-facing.
+## Important v1 rules:
+## - straight punches are punch_left / punch_right
+## - guard is the canonical defensive wording
+## - authored chart semantics like orthodox / southpaw are not tracked input events
+## - run_in_place is not part of the first implementation pass
+## - state-like movement intents use start/end style signals
+##
+## Raw pose, observation streams, and richer provider-specific body data remain
+## optional and provider-side. They do not replace this gameplay intent surface.
 
 # ============================================================================
-# SIGNALS: STANCE & POSITION
+# SIGNALS: OFFENSIVE INTENTS
 # ============================================================================
 
-## Emitted when player assumes standard boxing stance (left side forward).
-signal stance_orthodox
-
-## Emitted when player assumes southpaw stance (right side forward).
-signal stance_southpaw
-
-## Emitted when player location changes.
-## @param zone: "left", "center", or "right"
-signal location_changed(zone: StringName)
-
-## Emitted when player height changes.
-## @param type: "stand" or "squat"
-signal height_changed(type: StringName)
-
-# ============================================================================
-# SIGNALS: OFFENSIVE - PUNCHES
-# ============================================================================
-
-## Emitted when left punch (jab/straight) is detected.
+## Emitted when a left straight punch intent is detected.
 ## @param power: Punch power from 0.0 to 1.0
 signal punch_left(power: float)
 
-## Emitted when right punch (jab/straight) is detected.
+## Emitted when a right straight punch intent is detected.
 ## @param power: Punch power from 0.0 to 1.0
 signal punch_right(power: float)
 
-## Emitted when left uppercut is detected.
+## Emitted when a left uppercut intent is detected.
 ## @param power: Uppercut power from 0.0 to 1.0
 signal uppercut_left(power: float)
 
-## Emitted when right uppercut is detected.
+## Emitted when a right uppercut intent is detected.
 ## @param power: Uppercut power from 0.0 to 1.0
 signal uppercut_right(power: float)
 
-## Emitted when left cross is detected.
-## @param power: Cross power from 0.0 to 1.0
-signal cross_left(power: float)
-
-## Emitted when right cross is detected.
-## @param power: Cross power from 0.0 to 1.0
-signal cross_right(power: float)
-
-## Emitted when left hook is detected.
+## Emitted when a left hook intent is detected.
 ## @param power: Hook power from 0.0 to 1.0
 signal hook_left(power: float)
 
-## Emitted when right hook is detected.
+## Emitted when a right hook intent is detected.
 ## @param power: Hook power from 0.0 to 1.0
 signal hook_right(power: float)
 
 # ============================================================================
-# SIGNALS: DEFENSIVE
+# SIGNALS: DEFENSIVE / STATE INTENTS
 # ============================================================================
 
-## Emitted when player raises guard (block start).
-signal block_start
+## Emitted when the player enters guard.
+signal guard_start
 
-## Emitted when player lowers guard (block end).
-signal block_end
+## Emitted when the player exits guard.
+signal guard_end
 
-## Emitted when head weave to left is detected.
-signal weave_left
+## Emitted when the player begins a squat.
+signal squat_start
 
-## Emitted when head weave to right is detected.
-signal weave_right
+## Emitted when the player ends a squat.
+signal squat_end
 
-## Emitted when combined duck and weave to left is detected.
-signal duck_weave_left
+## Emitted when the player begins leaning left.
+signal lean_left_start
 
-## Emitted when combined duck and weave to right is detected.
-signal duck_weave_right
+## Emitted when the player stops leaning left.
+signal lean_left_end
+
+## Emitted when the player begins leaning right.
+signal lean_right_start
+
+## Emitted when the player stops leaning right.
+signal lean_right_end
+
+## Emitted when the player begins a left sidestep.
+signal sidestep_left_start
+
+## Emitted when the player completes or exits a left sidestep.
+signal sidestep_left_end
+
+## Emitted when the player begins a right sidestep.
+signal sidestep_right_start
+
+## Emitted when the player completes or exits a right sidestep.
+signal sidestep_right_end
 
 # ============================================================================
-# SIGNALS: OPTIONAL / FUTURE-FACING EXTENSIONS
+# SIGNALS: OPTIONAL / FUTURE-FACING LOWER-BODY EXTENSIONS
 # ============================================================================
 
-## Emitted when left knee strike is detected by a provider with lower-body support.
+## Emitted when a left knee strike is detected by a provider with lower-body support.
 ## @param power: Strike power from 0.0 to 1.0
 signal knee_strike_left(power: float)
 
-## Emitted when right knee strike is detected by a provider with lower-body support.
+## Emitted when a right knee strike is detected by a provider with lower-body support.
 ## @param power: Strike power from 0.0 to 1.0
 signal knee_strike_right(power: float)
 
-## Emitted when left leg lift is detected by a provider with lower-body support.
-signal leg_lift_left
+## Emitted when the player begins lifting the left leg.
+signal leg_lift_left_start
 
-## Emitted when right leg lift is detected by a provider with lower-body support.
-signal leg_lift_right
+## Emitted when the player stops lifting the left leg.
+signal leg_lift_left_end
 
-## Emitted when player begins running in place in future/provider-specific modes.
-signal run_start
+## Emitted when the player begins lifting the right leg.
+signal leg_lift_right_start
 
-## Emitted when player stops running in place in future/provider-specific modes.
-signal run_end
+## Emitted when the player stops lifting the right leg.
+signal leg_lift_right_end
 
 # ============================================================================
 # CAPABILITY CHECK
 # ============================================================================
 
 ## Override to report optional boxing capabilities.
-## Gesture recognition remains the expected hand-driven gameplay surface for
-## boxing, while lower-body and other richer hooks stay false until a concrete
-## provider explicitly advertises them.
+## Gesture recognition remains the expected gameplay-facing surface for boxing,
+## while lower-body and other richer hooks stay false until a concrete provider
+## explicitly advertises them.
 func has_capability(capability: Capability) -> bool:
 	match capability:
 		Capability.GESTURE_RECOGNITION:

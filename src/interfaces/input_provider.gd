@@ -2,15 +2,15 @@ class_name AeroInputProvider
 extends Node
 ## Abstract base class for AeroBeat input providers.
 ##
-## AeroBeat v1 gameplay is camera-first, but this contract intentionally keeps a
-## broader abstraction surface so future or experimental providers can plug into
-## shared game code without reworking the package boundary.
+## AeroBeat v1 gameplay is camera-first and intent-first.
 ##
-## Treat the interface in tiers:
-## - baseline v1 expectation: lifecycle + normalized body queries suitable for camera gameplay
-## - optional provider extensions: gestures, velocity, full transforms, lower-body data
-## - future-facing extensions: haptics, XR-style 6DOF richness, other non-camera affordances
+## This package keeps two intentionally different lanes of data:
+## - gameplay-facing intent contracts: stable, versionable signals like punches,
+##   guard, slices, squats, leans, and sidesteps
+## - optional provider observation data: richer body/spatial feeds that concrete
+##   providers may expose for detector internals, debugging, or future features
 ##
+## Raw pose / observation data is not the primary gameplay contract for v1.
 ## Implementers should only advertise capabilities they truly support. Callers
 ## should gate optional behavior through has_capability() instead of assuming the
 ## full surface is available on every provider.
@@ -22,8 +22,8 @@ extends Node
 ## Tracking coordinate modes.
 ## MODE_2D is the most common fit for camera-first gameplay normalization.
 enum TrackingMode {
-	MODE_2D,  ## Screen-space or normalized camera-space coordinates
-	MODE_3D   ## World-space coordinates for providers that can supply them
+	MODE_2D,  ## Screen-space or normalized camera-relative coordinates
+	MODE_3D   ## Optional richer provider-defined 3D coordinates when available
 }
 
 ## Provider capability flags.
@@ -64,12 +64,13 @@ signal stopped
 signal failed(error: String)
 
 # ============================================================================
-# SIGNALS: DATA (Continuous / Optional Rich Spatial Feed)
+# SIGNALS: OPTIONAL OBSERVATION / SPATIAL FEED
 # ============================================================================
 
-## Emitted every physics frame with the latest spatial data.
-## Camera providers may only meaningfully drive part of this surface, while XR or
-## other advanced providers may populate the richer transform stream more fully.
+## Optional continuous observation feed.
+## This is a provider-side richness channel, not the canonical gameplay-facing
+## v1 input contract. Camera providers may only populate part of this surface,
+## while richer providers may drive it more fully.
 signal tracking_updated(
 	head_transform: Transform3D,
 	left_hand_transform: Transform3D,
@@ -84,7 +85,7 @@ signal tracking_updated(
 
 ## Initializes and starts the tracking backend.
 ## @param settings_json: Configuration for the specific driver (for example camera
-## selection, smoothing, or future XR/provider-specific toggles).
+## selection, smoothing, or future provider-specific toggles).
 ## Returns: bool indicating success/failure.
 func start(settings_json: String) -> bool:
 	push_error("AeroInputProvider: start() must be overridden")
@@ -158,27 +159,27 @@ func get_right_foot_position(mode: TrackingMode = TrackingMode.MODE_2D) -> Vecto
 # STATE QUERIES: VELOCITY (Optional)
 # ============================================================================
 
-## Get head velocity vector (meters/second) when supported.
+## Get head velocity vector when supported.
 func get_head_velocity() -> Vector3:
 	push_error("AeroInputProvider: get_head_velocity() must be overridden")
 	return Vector3.ZERO
 
-## Get left hand velocity vector (meters/second) when supported.
+## Get left hand velocity vector when supported.
 func get_left_hand_velocity() -> Vector3:
 	push_error("AeroInputProvider: get_left_hand_velocity() must be overridden")
 	return Vector3.ZERO
 
-## Get right hand velocity vector (meters/second) when supported.
+## Get right hand velocity vector when supported.
 func get_right_hand_velocity() -> Vector3:
 	push_error("AeroInputProvider: get_right_hand_velocity() must be overridden")
 	return Vector3.ZERO
 
-## Get left foot velocity vector (meters/second) when lower-body tracking is supported.
+## Get left foot velocity vector when lower-body tracking is supported.
 func get_left_foot_velocity() -> Vector3:
 	push_error("AeroInputProvider: get_left_foot_velocity() must be overridden")
 	return Vector3.ZERO
 
-## Get right foot velocity vector (meters/second) when lower-body tracking is supported.
+## Get right foot velocity vector when lower-body tracking is supported.
 func get_right_foot_velocity() -> Vector3:
 	push_error("AeroInputProvider: get_right_foot_velocity() must be overridden")
 	return Vector3.ZERO
@@ -227,7 +228,7 @@ func get_tracking_confidence(body_part: StringName) -> float:
 # SETTERS / CONFIG
 # ============================================================================
 
-## Set the tracking mode (2D camera-first normalization or optional 3D output).
+## Set the tracking mode (2D camera-first normalization or optional richer 3D output).
 func set_tracking_mode(mode: TrackingMode) -> void:
 	push_error("AeroInputProvider: set_tracking_mode() must be overridden")
 

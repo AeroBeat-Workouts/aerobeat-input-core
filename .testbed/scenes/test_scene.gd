@@ -1,6 +1,6 @@
 extends Node2D
 ## Test scene for AeroBeat Input Core.
-## Verifies that the shared contracts load and communicates the current camera-first v1 framing.
+## Verifies that the shared contracts load and communicates the current camera-first, intent-first v1 framing.
 
 @onready var status_label: Label = $CanvasLayer/Panel/MarginContainer/VBoxContainer/StatusLabel
 @onready var class_list: Label = $CanvasLayer/Panel/MarginContainer/VBoxContainer/ClassList
@@ -10,7 +10,7 @@ const INTERFACE_PATH = "res://src/interfaces/input_provider.gd"
 func _ready():
 	print("=== AeroBeat Input Core Test Scene ===")
 	print("Official v1 gameplay path: camera-first providers")
-	print("Mouse/touch remain UI-navigation inputs; other providers stay future-facing.")
+	print("Official v1 gameplay contract: intent signals first, optional observation data second.")
 	
 	var file_exists = FileAccess.file_exists(INTERFACE_PATH)
 	var script_loaded = false
@@ -21,7 +21,7 @@ func _ready():
 		script_loaded = script != null
 	
 	if file_exists and script_loaded:
-		status_label.text = "✓ AeroBeat Input Core Loaded (camera-first v1 contracts)"
+		status_label.text = "✓ AeroBeat Input Core Loaded (camera-first v1 intent contracts)"
 		status_label.add_theme_color_override("font_color", Color.GREEN)
 		print("✓ AeroInputProvider interface found at: " + INTERFACE_PATH)
 		print("✓ Script resource loaded: " + str(script.resource_path))
@@ -38,6 +38,8 @@ func _ready():
 func _get_class_info() -> String:
 	var info = "Repo framing:\n"
 	info += "- Official v1 gameplay: camera-first providers\n"
+	info += "- Gameplay contract: stable intent signals\n"
+	info += "- Raw pose/observation: optional provider-side richness\n"
 	info += "- Mouse/touch: UI navigation, not gameplay parity\n"
 	info += "- XR/controllers/keyboard: future or experimental paths\n"
 	info += "\nAvailable Classes:\n"
@@ -48,6 +50,10 @@ func _get_class_info() -> String:
 	info += "\nTracking Modes:\n"
 	info += "  • MODE_2D (camera-first normalized coordinates)\n"
 	info += "  • MODE_3D (optional richer provider coordinates)\n"
+	info += "\nIntent Contract Highlights:\n"
+	info += "  • Boxing: punch_left / punch_right, guard_start / guard_end\n"
+	info += "  • Flow: slice_detected(placement, direction)\n"
+	info += "  • State intents: squat / lean / sidestep use start/end pairs\n"
 	info += "\nOptional Capabilities:\n"
 	info += "  • GESTURE_RECOGNITION\n"
 	info += "  • VELOCITY\n"

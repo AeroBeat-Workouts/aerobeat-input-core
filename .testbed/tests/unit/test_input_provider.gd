@@ -42,3 +42,124 @@ func test_boxing_input_reports_gesture_capability_without_claiming_lower_body_or
 	assert_true(provider.has_capability(AeroInputProvider.Capability.GESTURE_RECOGNITION))
 	assert_false(provider.has_capability(AeroInputProvider.Capability.LOWER_BODY))
 	assert_false(provider.has_capability(AeroInputProvider.Capability.HAPTICS))
+
+func test_boxing_input_exposes_v1_intent_signals_and_omits_retired_aliases():
+	var provider = autofree(BoxingInput.new())
+
+	for signal_name in [
+		"punch_left",
+		"punch_right",
+		"uppercut_left",
+		"uppercut_right",
+		"hook_left",
+		"hook_right",
+		"guard_start",
+		"guard_end",
+		"squat_start",
+		"squat_end",
+		"lean_left_start",
+		"lean_left_end",
+		"lean_right_start",
+		"lean_right_end",
+		"sidestep_left_start",
+		"sidestep_left_end",
+		"sidestep_right_start",
+		"sidestep_right_end",
+		"knee_strike_left",
+		"knee_strike_right",
+		"leg_lift_left_start",
+		"leg_lift_left_end",
+		"leg_lift_right_start",
+		"leg_lift_right_end"
+	]:
+		assert_true(provider.has_signal(signal_name), "Expected BoxingInput to expose '%s'" % signal_name)
+
+	for signal_name in [
+		"cross_left",
+		"cross_right",
+		"block_start",
+		"block_end",
+		"stance_orthodox",
+		"stance_southpaw",
+		"location_changed",
+		"height_changed",
+		"run_start",
+		"run_end"
+	]:
+		assert_false(provider.has_signal(signal_name), "Expected BoxingInput to omit '%s'" % signal_name)
+
+func test_flow_input_exposes_v1_slice_and_state_signals():
+	var provider = autofree(FlowInput.new())
+
+	for signal_name in [
+		"slice_detected",
+		"squat_start",
+		"squat_end",
+		"lean_left_start",
+		"lean_left_end",
+		"lean_right_start",
+		"lean_right_end",
+		"sidestep_left_start",
+		"sidestep_left_end",
+		"sidestep_right_start",
+		"sidestep_right_end"
+	]:
+		assert_true(provider.has_signal(signal_name), "Expected FlowInput to expose '%s'" % signal_name)
+
+	for signal_name in [
+		"stance_orthodox",
+		"stance_southpaw",
+		"location_changed",
+		"height_changed"
+	]:
+		assert_false(provider.has_signal(signal_name), "Expected FlowInput to omit '%s'" % signal_name)
+
+func test_flow_slice_signal_keeps_placement_and_direction_as_distinct_args():
+	var provider = autofree(FlowInput.new())
+	var signal_info = _get_signal_info(provider, "slice_detected")
+
+	assert_eq(signal_info["args"].size(), 2)
+	assert_eq(signal_info["args"][0]["name"], &"placement")
+	assert_eq(signal_info["args"][1]["name"], &"direction")
+
+func test_input_manager_proxies_v1_intent_surface():
+	var manager = autofree(InputManager.new())
+
+	for signal_name in [
+		"punch_left",
+		"punch_right",
+		"guard_start",
+		"guard_end",
+		"squat_start",
+		"squat_end",
+		"lean_left_start",
+		"lean_left_end",
+		"sidestep_left_start",
+		"sidestep_left_end",
+		"slice_detected"
+	]:
+		assert_true(manager.has_signal(signal_name), "Expected InputManager to proxy '%s'" % signal_name)
+
+	for signal_name in [
+		"cross_left",
+		"cross_right",
+		"block_start",
+		"block_end",
+		"stance_orthodox",
+		"stance_southpaw",
+		"location_changed",
+		"height_changed",
+		"run_start",
+		"run_end"
+	]:
+		assert_false(manager.has_signal(signal_name), "Expected InputManager to omit '%s'" % signal_name)
+
+	var slice_signal_info = _get_signal_info(manager, "slice_detected")
+	assert_eq(slice_signal_info["args"][0]["name"], &"placement")
+	assert_eq(slice_signal_info["args"][1]["name"], &"direction")
+
+func _get_signal_info(target: Object, signal_name: String) -> Dictionary:
+	for signal_info in target.get_signal_list():
+		if String(signal_info["name"]) == signal_name:
+			return signal_info
+	return {}
