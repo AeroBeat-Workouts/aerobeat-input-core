@@ -90,7 +90,37 @@ Flow also shares the same state-like movement style for obstacle/body intents:
 - `FlowInput` contract for camera-first Flow gameplay intents
 - `BoxingInput` contract for camera-first Boxing gameplay intents
 - `InputManager` runtime coordinator that prefers camera providers as the official default path and proxies the gameplay-facing intent surface
+- `src/ui/` normalized UI interaction contract for screen-space, hybrid 3D GUI, and future XR-facing UI input
 - Hidden `.testbed/` Godot workbench for manual inspection and GUT-based validation
+
+## UI interaction contract v1
+
+This repo now includes a composition-first UI interaction abstraction for downstream AeroBeat repos.
+
+Highlights:
+
+- one normalized `AeroUiInteractionEvent` payload
+- one canonical lifecycle field: `phase`
+- no separate canonical `action` field in the shared payload
+- shared `AeroUiInteractionBus` dispatcher
+- adapters for `screen_2d`, `hybrid_3d_gui`, and future-ready XR/world paths
+- listener/interactable helpers for composition instead of inherited panel base classes
+- explicit verification metadata so touch and XR can exist in the contract without overclaiming parity
+
+Key files:
+
+- `src/ui/ui_interaction_event.gd`
+- `src/ui/ui_interaction_types.gd`
+- `src/ui/ui_verification_status.gd`
+- `src/ui/ui_interaction_bus.gd`
+- `src/ui/adapters/screen_ui_input_adapter.gd`
+- `src/ui/adapters/hybrid_subviewport_input_adapter.gd`
+- `src/ui/adapters/xr_ui_input_adapter.gd`
+- `src/ui/consumers/ui_interaction_listener.gd`
+- `src/ui/consumers/ui_interactable.gd`
+- `.testbed/tests/unit/ui/test_ui_interaction_contract.gd`
+- `docs/ui-interaction-contract-v1.md`
+- `docs/ui-interaction-contract-v1-proposal.md`
 
 ## GodotEnv development flow
 
